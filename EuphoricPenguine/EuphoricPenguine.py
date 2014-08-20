@@ -27,7 +27,7 @@ def SendMail(APName, APMAC):
 		server.starttls()
 		server.ehlo()
 	server.login(settings.get('SMTP','username'), settings.get('SMTP','password'))
-	server.sendmail(fromAddress, ToAddress, msg.as_string())
+	server.sendmail(fromAddress, ToAddress, msg.as_string())		
 
 def PacketHandler(pkt):
 	white_list = settings.get('General','whiteList').split(',')
@@ -47,16 +47,26 @@ def PrintHeader():
 	print"        |_|                      |_|         |___|          "
 	print""
 	print"Rogue AP detection"
-	print""
 
+def GetInterfaces():
+	lst = []
+	for l in open('/proc/net/dev'):
+		if ':' in l:
+			lst.append(l.split(':')[0].strip())
+	return lst 
 
 def main():
 	PrintHeader()
 	settings.read('config.ini')
 	chans = settings.get('General', 'Channels').split(',')
 	chans = map(int, chans)
-	wait = float(settings.get('General','Delay'))
+	wait = float(settings.get('General','Delay')) 
 	interface = settings.get('General','MonitorInterface')
+	#check the interface exists
+	ifList = GetInterfaces()
+	if interface not in ifList:
+		print 'Interface does not exist!'
+		return
 
 	i = 0
 	while True:
